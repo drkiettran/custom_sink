@@ -7,30 +7,22 @@ import org.apache.flume.EventDeliveryException;
 import org.apache.flume.Transaction;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.sink.AbstractSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Hello world!
- *
- */
 public class FlumeConsoleOutSink extends AbstractSink implements Configurable {
-	private String myProp;
+	private static Logger logger = LoggerFactory.getLogger(FlumeConsoleOutSink.class);
 
 	@Override
 	public void configure(Context context) {
-		System.out.println("Configuring ...");
-		String myProp = context.getString("myProp", "defaultValue");
-
-		// Process the myProp value (e.g. validation)
-
-		// Store myProp for later retrieval by process() method
-		this.myProp = myProp;
+		logger.info("Configuring ...");
 	}
 
 	@Override
 	public void start() {
 		// Initialize the connection to the external repository (e.g. HDFS) that
 		// this Sink will forward Events to ..
-		System.out.println("Starting ...");
+		logger.info("Starting ...");
 	}
 
 	@Override
@@ -38,13 +30,13 @@ public class FlumeConsoleOutSink extends AbstractSink implements Configurable {
 		// Disconnect from the external respository and do any
 		// additional cleanup (e.g. releasing resources or nulling-out
 		// field values) ..
-		System.out.println("Stopping ...");
+		logger.info("Stopping ...");
 	}
 
 	@Override
 	public Status process() throws EventDeliveryException {
 		Status status = null;
-		System.out.println("Processing ...");
+		logger.info("Processing ...");
 		// Start transaction
 		Channel ch = getChannel();
 		Transaction txn = ch.getTransaction();
@@ -55,18 +47,11 @@ public class FlumeConsoleOutSink extends AbstractSink implements Configurable {
 			Event event = ch.take();
 			txn.commit();
 			status = Status.READY;
-			System.out.println("Body ..." + new String(event.getBody()));
-			// Send the Event to the external repository.
-			// storeSomeData(e);
+			logger.info("Body ... {}", new String(event.getBody()));
 
 		} catch (Throwable t) {
-//			txn.rollback();
-
-			// Log exception, handle individual exceptions as needed
-
 			status = Status.BACKOFF;
 
-			// re-throw all Errors
 			if (t instanceof Error) {
 				throw (Error) t;
 			}
